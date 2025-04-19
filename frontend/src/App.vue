@@ -10,10 +10,13 @@
       <p>{{ reply }}</p>
     </div>
   </div>
+
+  <PdfUploader />
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import PdfUploader from "./components/PdfUploader.vue";
 
 const question = ref('')
 const reply = ref('')
@@ -25,8 +28,12 @@ const send = async () => {
   const res = await fetch('http://localhost:3000/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question: question.value }),
+    body: JSON.stringify({
+      question: question.value,
+      sessionId: localStorage.getItem('sessionId')
+    })
   })
+
   const data = await res.json()
   reply.value = data.reply
   loading.value = false
