@@ -6,6 +6,14 @@ import 'dotenv/config'
 import uploadRoute from './routes/upload-route.js'
 import chatRoute from './routes/chat-route.js'
 import { cleanupOldSessions } from './utils/cleanup-sessions.js'
+import fs from 'fs'
+import path from 'path'
+
+
+const userDataDir = path.join(process.cwd(), 'user_data')
+if (!fs.existsSync(userDataDir)) {
+    fs.mkdirSync(userDataDir)
+}
 
 
 const app = express()
