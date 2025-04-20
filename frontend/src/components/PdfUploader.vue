@@ -12,6 +12,8 @@
 
     <p>Кількість фрагментів: {{ chunkCount }}</p>
     <button @click="resetKnowledge">Скинути базу знань</button>
+
+    <button @click="startNewSession">Почати нову сесію</button>
   </div>
 </template>
 
@@ -70,6 +72,12 @@ async function resetKnowledge() {
   const data = await res.json()
   message.value = data.message
   chunkCount.value = 0
+}
+
+function startNewSession() {
+  const newId = crypto.randomUUID()
+  localStorage.setItem('sessionId', newId)
+  location.reload() // або router push
 }
 
 onMounted(fetchChunkCount)

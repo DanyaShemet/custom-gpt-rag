@@ -5,6 +5,7 @@ import OpenAI from 'openai'
 import 'dotenv/config'
 import uploadRoute from './routes/upload-route.js'
 import chatRoute from './routes/chat-route.js'
+import { cleanupOldSessions } from './utils/cleanup-sessions.js'
 
 
 const app = express()
@@ -20,6 +21,11 @@ async function checkModels() {
 
 app.use(uploadRoute)
 app.use(chatRoute)
+
+
+setInterval(cleanupOldSessions, 60 * 60 * 1000)
+
+
 app.listen(3000, () => console.log('✅ Server running on http://localhost:3000'))
 
 checkModels()
