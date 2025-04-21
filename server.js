@@ -6,6 +6,7 @@ import 'dotenv/config'
 import uploadRoute from './routes/upload-route.js'
 import chatRoute from './routes/chat-route.js'
 import { cleanupOldSessions } from './utils/cleanup-sessions.js'
+import { errorHandler } from './middleware/error-handler.js'
 import fs from 'fs'
 import path from 'path'
 
@@ -35,5 +36,7 @@ setInterval(cleanupOldSessions, 60 * 60 * 1000)
 
 
 app.listen(3000, () => console.log('✅ Server running on http://localhost:3000'))
+
+app.use(errorHandler)
 
 checkModels()
