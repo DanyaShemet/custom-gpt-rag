@@ -3,11 +3,14 @@ import fs from 'fs'
 import path from 'path'
 import OpenAI from 'openai'
 import { cosineSimilarity } from '../utils/cosine-similarity.js'
+import {authMiddleware} from "../middleware/auth.js";
 
 const router = express.Router()
 const DATA_DIR = path.resolve('user_data')
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
+
+router.use(authMiddleware)
 router.post('/api/chat', async (req, res, next) => {
     try {
         const { question, sessionId } = req.body

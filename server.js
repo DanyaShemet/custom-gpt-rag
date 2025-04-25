@@ -5,10 +5,13 @@ import OpenAI from 'openai'
 import 'dotenv/config'
 import uploadRoute from './routes/upload-route.js'
 import chatRoute from './routes/chat-route.js'
+import authRoute from './routes/auth-route.js'
 import { cleanupOldSessions } from './utils/cleanup-sessions.js'
 import { errorHandler } from './middleware/error-handler.js'
 import fs from 'fs'
 import path from 'path'
+
+import { connectDB } from './db/mongoose.js'
 
 
 const userDataDir = path.join(process.cwd(), 'user_data')
@@ -18,6 +21,9 @@ if (!fs.existsSync(userDataDir)) {
 
 
 const app = express()
+
+await connectDB()
+
 app.use(cors())
 app.use(bodyParser.json())
 
@@ -28,8 +34,11 @@ async function checkModels() {
     console.log(models.data.map(m => m.id))
 }
 
+app.use('/auth', authRoute)
+
 app.use(uploadRoute)
 app.use(chatRoute)
+
 
 
 setInterval(cleanupOldSessions, 60 * 60 * 1000)

@@ -3,11 +3,13 @@ import multer from 'multer'
 import fs from 'fs'
 import path from 'path'
 import { extractPdfText } from '../utils/pdf.js'
+import {authMiddleware} from "../middleware/auth.js";
 
 const router = express.Router()
 const upload = multer({ storage: multer.memoryStorage() })
 const DATA_DIR = path.resolve('user_data')
 
+router.use(authMiddleware)
 router.post('/upload', upload.single('file'), async (req, res, next) => {
     try {
         const sessionId = req.body.sessionId
