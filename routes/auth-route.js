@@ -1,7 +1,8 @@
 import express from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { User } from '../models/User.js'
+import { User } from '../models/user.js'
+import {authMiddleware} from "../middleware/auth.js";
 
 const router = express.Router()
 
@@ -68,5 +69,18 @@ router.post('/login', async (req, res, next) => {
         next(err)
     }
 })
+
+router.get('/me', authMiddleware, async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user.id).select('-password')
+        if (!user) {
+            throw { status: 404, message: 'Користувача не знайдено' }
+        }
+        res.json(user)
+    } catch (err) {
+        next(err)
+    }
+})
+
 
 export default router

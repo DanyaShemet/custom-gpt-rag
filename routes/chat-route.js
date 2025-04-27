@@ -1,29 +1,29 @@
 import express from 'express'
-import fs from 'fs'
-import path from 'path'
 import OpenAI from 'openai'
 import { cosineSimilarity } from '../utils/cosine-similarity.js'
-import {authMiddleware} from "../middleware/auth.js";
+import { authMiddleware } from '../middleware/auth.js'
+import { Document } from '../models/documents.js'
 
 const router = express.Router()
-const DATA_DIR = path.resolve('user_data')
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
-
 router.use(authMiddleware)
+
 router.post('/api/chat', async (req, res, next) => {
     try {
-        const { question, sessionId } = req.body
-        if (!question || !sessionId) {
-            throw { status: 400, message: 'Потрібно question і sessionId.' }
+        const { question } = req.body
+        if (!question) {
+            throw { status: 400, message: 'Потрібно question.' }
         }
 
-        const filepath = path.join(DATA_DIR, `user_${sessionId}.json`)
-        if (!fs.existsSync(filepath)) {
+        // Витягуємо всі chunks юзера
+        const docs = await Document.find({ userId: req.user.id })
+
+        if (!docs.length) {
             return res.json({ reply: 'У вас ще немає бази знань. Завантажте PDF.' })
         }
 
-        const chunks = JSON.parse(fs.readFileSync(filepath, 'utf-8'))
+        const chunks = docs.map(doc => doc.content)
         const questionEmbedding = await getEmbedding(question)
 
         const scoredChunks = await Promise.all(
@@ -61,35 +61,31 @@ router.post('/api/chat', async (req, res, next) => {
     }
 })
 
-async function getEmbedding(text) {
-    const res = await openai.embeddings.create({
-        model: 'text-embedding-3-small',
-        input: text
-    })
-    return res.data[0].embedding
-}
-
-router.get('/api/status/:sessionId', async (req, res, next) => {
+router.get('/api/status', async (req, res, next) => {
     try {
-        const { sessionId } = req.params
-        const filepath = path.join(DATA_DIR, `user_${sessionId}.json`)
-        if (!fs.existsSync(filepath)) return res.json({ count: 0 })
-        const chunks = JSON.parse(fs.readFileSync(filepath, 'utf-8'))
-        res.json({ count: chunks.length })
+        const count = await Document.countDocuments({ userId: req.user.id })
+        const documents = await Document.find({ userId: req.user.id })
+        res.json({ count })
     } catch (err) {
         next(err)
     }
 })
 
-router.delete('/api/reset/:sessionId', async (req, res, next) => {
+router.delete('/api/reset', async (req, res, next) => {
     try {
-        const { sessionId } = req.params
-        const filepath = path.join(DATA_DIR, `user_${sessionId}.json`)
-        if (fs.existsSync(filepath)) fs.unlinkSync(filepath)
+        await Document.deleteMany({ userId: req.user.id })
         res.json({ message: 'Базу знань очищено.' })
     } catch (err) {
         next(err)
     }
 })
+
+async function getEmbedding(text) {
+    const res = await openai.embeddings.create({
+        model: 'text-embedding-3-small',
+        input: text,
+    })
+    return res.data[0].embedding
+}
 
 export default router
