@@ -37,29 +37,28 @@ router.post('/upload', upload.single('file'), async (req, res, next) => {
         }))
 
         const fileUrl = `https://${process.env.S3_BUCKET}.s3.${process.env.S3_REGION}.amazonaws.com/${fileKey}`
-
-        console.log(fileUrl)
-
         const text = await extractPdfText(file.buffer)
+
         if (!text.trim()) {
             throw { status: 400, message: 'PDF не містить тексту.' }
         }
 
         const chunks = text.match(/(.|[\r\n]){1,500}/g) || []
 
-        const documents = chunks.map(chunk => ({
+        const document = new Document({
             userId: req.user.id,
-            content: chunk,
+            contentChunks: chunks,
             fileName: file.originalname,
-            fileUrl, // ⚡ зберігаємо лінк на S3 файл
-        }))
+            fileUrl,
+            createdAt: new Date(),
+        })
 
-        await Document.insertMany(documents)
+        await document.save()
 
         const totalDocs = await Document.countDocuments({ userId: req.user.id })
 
         res.json({
-            message: `Додано ${chunks.length} фрагментів. Загалом у вашій базі знань: ${totalDocs}.`,
+            message: `Документ додано з ${chunks.length} фрагментів. Загалом у базі знань: ${totalDocs}.`,
             fileUrl,
         })
     } catch (err) {

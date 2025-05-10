@@ -23,7 +23,8 @@ router.post('/api/chat', async (req, res, next) => {
             return res.json({ reply: 'У вас ще немає бази знань. Завантажте PDF.' })
         }
 
-        const chunks = docs.map(doc => doc.content)
+        const chunks = docs.flatMap(doc => doc.contentChunks)
+
         const questionEmbedding = await getEmbedding(question)
 
         const scoredChunks = await Promise.all(
