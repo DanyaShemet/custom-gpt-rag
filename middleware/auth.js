@@ -7,6 +7,7 @@ export function authMiddleware(req, res, next) {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         const error = new Error('Authorization header missing or malformed')
         error.status = 401
+        console.log('Authorization header missing or malformed')
         throw error
     }
 
