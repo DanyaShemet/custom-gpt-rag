@@ -3,6 +3,9 @@ import OpenAI from 'openai'
 import { cosineSimilarity } from '../utils/cosine-similarity.js'
 import { authMiddleware } from '../middleware/auth.js'
 import { Document } from '../models/documents.js'
+import {Chat} from "../models/chat.js";
+import {DeleteObjectCommand} from "@aws-sdk/client-s3";
+
 
 const router = express.Router()
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -40,14 +43,15 @@ router.post('/api/chat', async (req, res, next) => {
             .slice(0, 3)
             .map(item => item.chunk)
 
+
         const context = topChunks.join('\n---\n')
 
         const completion = await openai.chat.completions.create({
-            model: 'gpt-3.5-turbo',
+            model: 'gpt-4.1',
             messages: [
                 {
                     role: 'system',
-                    content: 'Відповідай лише на основі наданого контексту. Якщо не знаєш — скажи, що не знаєш.'
+                    content: 'Відповідай лише на основі наданого контексту. Якщо не знаєш — скажи, що не знаєш. Не використовуй загальновідомі факти. Не виправляй текст. Просто переказуй, що в контексті.'
                 },
                 {
                     role: 'user',
@@ -57,6 +61,75 @@ router.post('/api/chat', async (req, res, next) => {
         })
 
         res.json({ reply: completion.choices[0].message.content })
+    } catch (err) {
+        next(err)
+    }
+})
+
+router.post('/api/chats', async (req, res, next) => {
+    try {
+
+        const chat =  await  Chat.create({
+            userId: req.user.id,
+            title: req.body?.title || 'Новий чат',
+        })
+
+        res.json({ chatId: chat._id, title: chat.title })
+    } catch (err) {
+        next(err)
+    }
+})
+
+router.get('/chats', async (req, res, next) => {
+    try {
+
+        const chats = await Chat.find({ userId: req.user.id })
+
+        res.json({ chats })
+    } catch (err) {
+        next(err)
+    }
+})
+
+router.put('/api/chats/:id', async (req, res, next) => {
+    try {
+        const { title } = req.body
+        const { id } = req.params
+
+        if (typeof title !== 'string' || title.trim().length === 0) {
+            return res.status(400).json({ message: 'Некоректна назва чату' })
+        }
+
+        const chat = await Chat.findById(id)
+
+        if (!chat || chat.userId.toString() !== req.user.id) {
+            return res.status(404).json({ message: 'Чат не знайдено або немає доступу' })
+        }
+
+        chat.title = title.trim()
+
+        await chat.save()
+
+        res.json({ chat })
+    } catch (err) {
+        next(err)
+    }
+})
+
+
+
+router.delete('/chats/:id', async (req, res, next) => {
+    try {
+        const { id } = req.params
+        const chat = await Chat.findById(id)
+
+        if (!chat || chat.userId.toString() !== req.user.id) {
+            throw { status: 404, message: 'Чат не знайдено або немає доступу' }
+        }
+
+        await Chat.findByIdAndDelete(id)
+
+        res.json({ message: 'Чат видалено успішно' })
     } catch (err) {
         next(err)
     }
