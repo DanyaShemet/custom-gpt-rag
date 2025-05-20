@@ -12,7 +12,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 router.use(authMiddleware)
 
-router.post('/api/chat', async (req, res, next) => {
+router.post('/chat', async (req, res, next) => {
     try {
         const { question } = req.body
         if (!question) {
@@ -66,7 +66,7 @@ router.post('/api/chat', async (req, res, next) => {
     }
 })
 
-router.post('/api/chats', async (req, res, next) => {
+router.post('/chats', async (req, res, next) => {
     try {
 
         const chat =  await  Chat.create({
@@ -82,16 +82,31 @@ router.post('/api/chats', async (req, res, next) => {
 
 router.get('/chats', async (req, res, next) => {
     try {
-
         const chats = await Chat.find({ userId: req.user.id })
 
-        res.json({ chats })
+        res.json({ data: chats })
     } catch (err) {
         next(err)
     }
 })
 
-router.put('/api/chats/:id', async (req, res, next) => {
+router.get('/chats/:id', async (req, res, next) => {
+    try {
+        const { id } = req.params
+
+        const chat = await Chat.findById(id)
+
+        if (!chat) {
+            return res.status(400).json({ message: 'Чат не знайдено або немає доступу' })
+        }
+
+        res.json(chat)
+    } catch (err) {
+        next(err)
+    }
+})
+
+router.put('/chats/:id', async (req, res, next) => {
     try {
         const { title } = req.body
         const { id } = req.params
@@ -116,8 +131,6 @@ router.put('/api/chats/:id', async (req, res, next) => {
     }
 })
 
-
-
 router.delete('/chats/:id', async (req, res, next) => {
     try {
         const { id } = req.params
@@ -135,7 +148,7 @@ router.delete('/chats/:id', async (req, res, next) => {
     }
 })
 
-router.get('/api/status', async (req, res, next) => {
+router.get('/status', async (req, res, next) => {
     try {
         const count = await Document.countDocuments({ userId: req.user.id })
         const documents = await Document.find({ userId: req.user.id })
@@ -145,7 +158,7 @@ router.get('/api/status', async (req, res, next) => {
     }
 })
 
-router.delete('/api/reset', async (req, res, next) => {
+router.delete('/reset', async (req, res, next) => {
     try {
         await Document.deleteMany({ userId: req.user.id })
         res.json({ message: 'Базу знань очищено.' })
