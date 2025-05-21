@@ -13,12 +13,10 @@ import path from 'path'
 
 import { connectDB } from './db/mongoose.js'
 
-
 const userDataDir = path.join(process.cwd(), 'user_data')
 if (!fs.existsSync(userDataDir)) {
-    fs.mkdirSync(userDataDir)
+  fs.mkdirSync(userDataDir)
 }
-
 
 const app = express()
 
@@ -30,8 +28,8 @@ app.use(bodyParser.json())
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 async function checkModels() {
-    const models = await openai.models.list()
-    console.log(models.data.map(m => m.id))
+  const models = await openai.models.list()
+  console.log(models.data.map((m) => m.id))
 }
 
 app.use('/auth', authRoute)
@@ -39,11 +37,6 @@ app.use('/auth', authRoute)
 app.use(uploadRoute)
 app.use(chatRoute)
 app.use(documentsRoute)
-
-
-
-
-
 
 app.listen(3000, () => console.log('✅ Server running on http://localhost:3000'))
 

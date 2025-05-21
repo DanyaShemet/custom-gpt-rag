@@ -1,11 +1,16 @@
 import mongoose from 'mongoose'
 
+const chunkSchema = new mongoose.Schema({
+  text: String,
+  embedding: [Number],
+})
+
 const documentSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    contentChunks: { type: [String], required: true },
-    fileName: { type: String, required: true },
-    fileUrl: { type: String, required: true },
-    createdAt: { type: Date, default: Date.now },
+  userId: { type: String, required: true },
+  fileName: String,
+  fileUrl: String,
+  createdAt: Date,
+  chunks: [chunkSchema],
 })
 
 export const Document = mongoose.model('Document', documentSchema)
