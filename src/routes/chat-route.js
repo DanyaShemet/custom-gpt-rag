@@ -1,10 +1,10 @@
 import express from 'express'
 import OpenAI from 'openai'
-import { cosineSimilarityNorm, normalizeEmbedding } from '../dist/utils/cosine-similarity.js'
 import { authMiddleware } from '../middleware/auth.js'
 import { Document } from '../models/documents.js'
 import { Chat } from '../models/chat.js'
-import { getEmbedding } from '../dist/utils/get-embeding.js'
+import { getEmbedding } from '../utils/get-embeding.js'
+import { cosineSimilarityNorm, normalizeEmbedding } from '../utils/cosine-similarity.js'
 
 const router = express.Router()
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })

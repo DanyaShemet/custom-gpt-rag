@@ -5,7 +5,7 @@ import { extractPdfText } from '../utils/pdf.js'
 import { authMiddleware } from '../middleware/auth.js'
 import { Document } from '../models/documents.js'
 import { v4 as uuidv4 } from 'uuid'
-import { getEmbedding } from '../dist/utils/get-embeding.js'
+import { getEmbedding } from '../utils/get-embeding.js'
 
 const router = express.Router()
 const upload = multer({ storage: multer.memoryStorage() })

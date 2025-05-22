@@ -6,10 +6,12 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon server.js",
-    "ts-compile": "tsc",
-    "lint": "eslint \"{routes,models,middleware,utils}/**/*.{ts,js}\"",
-    "typecheck": "tsc --noEmit"
+    "dev": "concurrently -k \"tsc --watch\" \"wait-on dist/server.js && nodemon dist/server.js\"",
+    "clean": "rimraf dist",
+    "ts-compile": "npm run clean ; tsc",
+    "lint": "eslint  . --config eslint.config.js",
+    "typecheck": "tsc --noEmit",
+    "start": "npm run ts-compile ; node dist/server.js"
   },
   "author": "",
   "license": "ISC",
@@ -29,13 +31,18 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.27.0",
+    "@types/cors": "^2.8.18",
+    "@types/express": "^5.0.2",
     "@typescript-eslint/eslint-plugin": "^8.32.1",
     "@typescript-eslint/parser": "^8.32.1",
+    "concurrently": "^9.1.2",
     "eslint": "^9.27.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-import": "^2.31.0",
     "prettier": "^3.5.3",
+    "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "wait-on": "^8.0.3"
   }
 }

@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     "target": "ES2022",
     "module": "ES2022",
     "moduleResolution": "node",
@@ -11,7 +12,7 @@
     "allowSyntheticDefaultImports": true,
     "outDir": "dist",
     "sourceMap": true,
-    "rootDir": "."
+    "rootDir": "src"
   },
-  "include": ["routes", "models", "utils", "middleware"]
+  "include": ["src/**/*"],
 }
