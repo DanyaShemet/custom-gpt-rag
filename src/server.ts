@@ -7,6 +7,7 @@ import uploadRoute from './routes/upload-route.js'
 import chatRoute from './routes/chat-route.js'
 import documentsRoute from './routes/documents-route.js'
 import authRoute from './routes/auth-route.js'
+import messageRoute from './routes/messages-route.js'
 import { errorHandler } from './middleware/error-handler.js'
 import fs from 'fs'
 import path from 'path'
@@ -35,6 +36,7 @@ async function checkModels() {
 app.use('/auth', authRoute)
 
 app.use(uploadRoute)
+app.use(messageRoute)
 app.use(chatRoute)
 app.use(documentsRoute)
 
